@@ -13,9 +13,7 @@
     </div>
     <div class="info">
         <h5>
-            <a href="{% url 'listing' listing.id %}">
-                {{listing.title}}
-            </a>
+          {{listing.title}}
         </h5>
         <p>{{listing.description|truncatechars:15 }}</p>
         <span>${{listing.starting_bid}}</span>

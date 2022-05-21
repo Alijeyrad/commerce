@@ -3,10 +3,25 @@
 
 
 {% block body %}
-  {{category}}
+  <h1>
+    {{category}}
+  </h1>
   
   {% for listing in listings %}
-    {{listing.title}}
+    <div class="container">
+      <div class="image">
+          <img src="{{listing.image_url}}" alt="{{listing.title}}">
+      </div>
+      <div class="info">
+          <h5>
+              <a href="{% url 'listing' listing.id %}">
+                  {{listing.title}}
+              </a>
+          </h5>
+          <p>{{listing.description|truncatechars:15 }}</p>
+          <span>${{listing.starting_bid}}</span>
+      </div>
+    </div>
   {% endfor %}
     
 {% endblock body %}
