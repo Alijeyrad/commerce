@@ -1,0 +1,27 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block title %}
+  Categories
+{% endblock title %}
+
+
+{% block body %}
+  
+  
+  {% for category in categories %}
+    <div class="container">
+      <div class="image">
+        {% with img_url="auctions/categoryimage/{{category.title}}.jpg" %} 
+        <img src="{% static img_url %}" alt="{{category.title}}">
+        {% endwith %}
+      </div>
+      <div class="title">
+        <p>{{ category.title }}</p>
+      </div>
+    </div>
+  {% endfor %}
+    
+
+{% endblock body %}
+  
