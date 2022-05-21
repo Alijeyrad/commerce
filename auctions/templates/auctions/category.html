@@ -1,0 +1,13 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+
+{% block body %}
+  {{category}}
+  
+  {% for listing in listings %}
+    {{listing.title}}
+  {% endfor %}
+    
+{% endblock body %}
+  

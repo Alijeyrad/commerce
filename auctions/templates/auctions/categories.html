@@ -10,16 +10,16 @@
   
   
   {% for category in categories %}
-    <div class="container">
-      <div class="image">
-        {% with img_url="auctions/categoryimage/{{category.title}}.jpg" %} 
-        <img src="{% static img_url %}" alt="{{category.title}}">
-        {% endwith %}
+    <a href="{% url 'category' category.title %}">
+      <div class="container">
+        <div class="image">
+          <img src="static/auctions/categoryimage/{{category.title}}.jpg" alt="{{category.title}}" width="200" height="200">
+        </div>
+        <div class="title">
+          <p>{{ category.title }}</p>
+        </div>
       </div>
-      <div class="title">
-        <p>{{ category.title }}</p>
-      </div>
-    </div>
+    </a>
   {% endfor %}
     
 

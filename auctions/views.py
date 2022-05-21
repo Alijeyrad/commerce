@@ -1,3 +1,4 @@
+from nis import cat
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
@@ -107,3 +108,11 @@ def watchlist(request):
 def categories(request):
     categories = Category.objects.all()
     return render(request, "auctions/categories.html", {'categories': categories})
+
+def category(request, category):
+    category = Category.objects.get(title = category)
+    listings = Listing.objects.all().filter(category=category.id)
+    return render(request, "auctions/category.html", {
+        'category': category,
+        'listings': listings
+    })
