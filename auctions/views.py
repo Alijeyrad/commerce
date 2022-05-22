@@ -4,7 +4,6 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.db.models import F
 
 from .models import *
 
@@ -143,9 +142,17 @@ def add_comment(request, id):
         listing = Listing.objects.get(id=id)
         latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
         user = User.objects.get(id=request.user.id)
+        text = request.POST["comment"]
+        if text == '':
+            comments = Comment.objects.all().filter(for_listing=listing).order_by('-time_added')
+            return render(request, "auctions/listing.html", {
+                'listing': listing,
+                'latest_bid': latest_bid[0] if latest_bid else None,
+                'comments': comments
+            })
 
         new_comment = Comment.objects.create(
-            text = request.POST["comment"],
+            text = text,
             writer = user,
             for_listing = listing
         )
