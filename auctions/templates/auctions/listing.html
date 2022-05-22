@@ -7,7 +7,7 @@
   
 
 {% block body %}
-  <div class="container">
+  <div class="container listing">
     <div class="image">
         <img src="{{listing.image_url}}" alt="{{listing.title}}">
     </div>
@@ -15,10 +15,58 @@
         <h5>
           {{listing.title}}
         </h5>
-        <p>{{listing.description|truncatechars:15 }}</p>
-        <span>${{listing.starting_bid}}</span>
+        <p>{{listing.description}}</p>
+        <p> <strong>starting price: </strong>${{listing.starting_bid}}</p>
+        <p><strong>category: </strong>{{listing.category}}</p>
+        <p><strong>Created by: </strong>{{listing.owner}}</p>
     </div>
   </div>
+
+  <div class="container bidding">
+    
+    {% if latest_bid %}
+      <strong>Current Bid: </strong>${{latest_bid.bid}} by {{latest_bid.bidder}}
+      {% else %}
+      <strong>Current Bid: </strong>No bids yet, be the first to bid.
+    {% endif %}
+      
+    <form class="bid" action="{% url 'listing' listing.id %}" method="post">
+      {% csrf_token %}
+      <br>
+      <input type="number" step="0.1" min=0 name="bid" placeholder="Place your bid">
+      <button type="submit">Add to Watchlist</button>
+    </form>
+  </div>
+  
+  {% if message %}
+    <p>{{message}}</p>
+  {% endif %}
+
+  <div class="container comments">
+    <br>
+    {% if user.is_authenticated %}
+    <form action="{% url 'comment' listing.id %}" method="post" class="commentForm">
+      {% csrf_token %}
+      <textarea name="comment" cols="30" rows="3" placeholder="Comment here"></textarea>
+      <button type="submit">Comment</button>
+    </form>
+      {% else %}
+      <h2>Log in to comment</h2>
+    {% endif %}
+
+    
+    {% for comment in comments %}
+      <div class="singleComment">
+        <strong>{{comment.writer}}:</strong>
+        <span>{{comment.text}}</span>
+        <p><small>{{comment.time_added}}</small></p>
+      </div>
+      {% empty %}
+      No comments for this listing
+    {% endfor %}
+      
+  </div>
+    
 
 {% endblock body %}
   

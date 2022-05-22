@@ -4,12 +4,13 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.db.models import F
 
 from .models import *
 
 
 def index(request):
-    listings = Listing.objects.all().filter(active=True).order_by('created_date')
+    listings = Listing.objects.all().filter(active=True).order_by('-created_date')
     return render(request, "auctions/index.html", {'listings': listings})
 
 
@@ -97,8 +98,66 @@ def create_listing(request):
 
 
 def listing(request, id):
-    listing = Listing.objects.get(id=id)
-    return render(request, "auctions/listing.html", {'listing': listing})
+    # id that comes in is the id of the listing
+    if request.method == "POST":
+        listing = Listing.objects.get(id = id)
+        latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
+        bid = request.POST["bid"]
+
+        if float(bid) > float(latest_bid[0].bid):
+            user = User.objects.get(id = request.user.id)
+            new_bid = Bid.objects.create(
+                bid = bid,
+                bidder = user,
+                for_listing = listing
+            )
+            new_bid.save()
+            # updating the M2M relationship between user and listing (through watchlist)
+            user.watchlist.add(listing)
+            user.save()
+            return render(request, "auctions/listing.html", {
+                'listing': listing,
+                'message': 'Submitted Successfully',
+                'latest_bid': latest_bid[0] if latest_bid else None,
+            })
+        else:
+            return render(request, "auctions/listing.html", {
+                'listing': listing,
+                'message': 'You have to bid higher!',
+                'latest_bid': latest_bid[0] if latest_bid else None,
+            })
+    else:
+        listing = Listing.objects.get(id=id)
+        comments = Comment.objects.all().filter(for_listing=listing).order_by('-time_added')
+        latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
+        # users = User.objects.get(id = request.user.id)
+        return render(request, "auctions/listing.html", {
+            'listing': listing,
+            'latest_bid': latest_bid[0] if latest_bid else None,
+            'comments': comments
+        })
+
+def add_comment(request, id):
+    if request.method == "POST":
+
+        listing = Listing.objects.get(id=id)
+        latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
+        user = User.objects.get(id=request.user.id)
+
+        new_comment = Comment.objects.create(
+            text = request.POST["comment"],
+            writer = user,
+            for_listing = listing
+        )
+        new_comment.save()
+
+        comments = Comment.objects.all().filter(for_listing=listing).order_by('-time_added')
+
+        return render(request, "auctions/listing.html", {
+            'listing': listing,
+            'latest_bid': latest_bid[0] if latest_bid else None,
+            'comments': comments
+        })
 
 def watchlist(request):
     user = User.objects.get(id = request.user.id)

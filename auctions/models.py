@@ -38,3 +38,6 @@ class Bid(models.Model):
     time_added = models.DateTimeField(auto_now_add=True)
     bidder = models.ForeignKey(User, on_delete=models.CASCADE)
     for_listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.bidder}'s bid for {self.for_listing}"
