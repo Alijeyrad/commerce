@@ -98,40 +98,66 @@ def create_listing(request):
 
 def listing(request, id):
     # id that comes in is the id of the listing
+    listing = Listing.objects.get(id=id)
+    comments = Comment.objects.all().filter(for_listing=listing).order_by('-time_added')
+    latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
+    # users = User.objects.get(id = request.user.id)
+    return render(request, "auctions/listing.html", {
+        'listing': listing,
+        'latest_bid': latest_bid[0] if latest_bid else None,
+        'comments': comments
+    })
+
+def add_bid(request, id):
+    # incoming id is listing id
     if request.method == "POST":
         listing = Listing.objects.get(id = id)
+        comments = Comment.objects.all().filter(for_listing=listing).order_by('-time_added')
         latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
         bid = request.POST["bid"]
-
-        if float(bid) > float(latest_bid[0].bid):
-            user = User.objects.get(id = request.user.id)
+        user = User.objects.get(id = request.user.id)
+        message = ''
+        # create a new bid if it's valid
+        if latest_bid:
+            # this is when there are previous bids
+            # so we'll create the bid if it's higher than the latest bid
+            if latest_bid[0].bid < float(bid):
+                new_bid = Bid.objects.create(
+                    bid = bid,
+                    bidder = user,
+                    for_listing = listing
+                )
+                new_bid.save()
+                # updating the M2M relationship between user and listing (through watchlist)
+                user.watchlist.add(listing)
+                user.save()
+                message = 'Submitted Successfully'
+                latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
+            else:
+                message = 'You have to bid higher than the last price. Try again.'
+                
+        elif listing.starting_bid < float(bid):
+            # this is when there is no previous bid
+            # so we'll create the bid if it's higher than starting bid
             new_bid = Bid.objects.create(
-                bid = bid,
-                bidder = user,
-                for_listing = listing
-            )
+                    bid = bid,
+                    bidder = user,
+                    for_listing = listing
+                )
             new_bid.save()
             # updating the M2M relationship between user and listing (through watchlist)
             user.watchlist.add(listing)
             user.save()
-            return render(request, "auctions/listing.html", {
-                'listing': listing,
-                'message': 'Submitted Successfully',
-                'latest_bid': latest_bid[0] if latest_bid else None,
-            })
+            message = 'Submitted Successfully'
+            latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
+        
         else:
-            return render(request, "auctions/listing.html", {
-                'listing': listing,
-                'message': 'You have to bid higher!',
-                'latest_bid': latest_bid[0] if latest_bid else None,
-            })
-    else:
-        listing = Listing.objects.get(id=id)
-        comments = Comment.objects.all().filter(for_listing=listing).order_by('-time_added')
-        latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
-        # users = User.objects.get(id = request.user.id)
+            message = 'You have to bid higher than the last price. Try again.'
+
+
         return render(request, "auctions/listing.html", {
             'listing': listing,
+            'message': message,
             'latest_bid': latest_bid[0] if latest_bid else None,
             'comments': comments
         })

@@ -30,7 +30,7 @@
       <strong>Current Bid: </strong>No bids yet, be the first to bid.
     {% endif %}
       
-    <form class="bid" action="{% url 'listing' listing.id %}" method="post">
+    <form class="bid" action="{% url 'add_bid' listing.id %}" method="post">
       {% csrf_token %}
       <br>
       <input type="number" step="0.1" min=0 name="bid" placeholder="Place your bid">
