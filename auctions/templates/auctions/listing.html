@@ -1,10 +1,8 @@
 {% extends "auctions/layout.html" %}
 
-
 {% block title %}
   {{listing.title}}
 {% endblock title %}
-  
 
 {% block body %}
   <div class="container listing">
@@ -17,42 +15,85 @@
         </h5>
         <p>{{listing.description}}</p>
         <p> <strong>starting price: </strong>${{listing.starting_bid}}</p>
+        
+        {% if listing.active %}
+          <p style="color:rgb(5, 91, 5)">This listing is active</p>
+          {% else %}
+          <p style="color:rgb(147, 6, 6)">This auction is closed</p>
+        {% endif %}
+          
+        
+        {% if listing.owner == user and listing.active %}
+          <form action="{% url 'close_listing' listing.id %}">
+            <button type="submit" class="btn btn-danger">Close this Auction</button>
+          </form>
+        {% endif %}
+          
         <p><strong>category: </strong>{{listing.category}}</p>
         <p><strong>Created by: </strong>{{listing.owner}}</p>
+        <p><strong>Created: </strong>{{listing.created_date}}</p>
     </div>
   </div>
 
   <div class="container bidding">
     
     {% if latest_bid %}
-      <strong>Current Bid: </strong>${{latest_bid.bid}} 
+    
+      {% if listing.active %}
+        <strong>Current Bid: </strong>${{latest_bid.bid}}
+        {% else %}
+        <strong>Sold for: </strong>${{latest_bid.bid}}
+      {% endif %}
+      
       
       {% if latest_bid.bidder == user %}
-        <span>by you</span>
+    
+        {% if listing.active %}
+          <span>by you</span>
+          {% else %}
+          <span>to you</span>
+        {% endif %}
+      
+        
+        {% if listing.active %}
         <span>
           <form class="remove_watchlist" method="post" action="{% url 'remove_watchlist' listing.id %}">
             {% csrf_token %}
-            <button type="submit">Remove from Watchlist</button>
+            <button type="submit">Remove your bid</button>
           </form>
         </span>
+        {% endif %}
+          
       {% else %}
-        <span>by {{latest_bid.bidder}}</span>
+      
+          {% if listing.active %}
+            <span>by {{latest_bid.bidder}}</span>
+            {% else %}
+            <span>to {{latest_bid.bidder}}</span>
+          {% endif %}
+        
       {% endif %}
         
       {% else %}
-      <strong>Current Bid: </strong>No bids yet, be the first to bid.
+      
+      {% if listing.active %}
+        <strong>Current Bid: </strong>No bids yet, be the first to bid.
+        {% else %}
+        <strong>Sold for: </strong>This item had no bids
+      {% endif %}
+        
     {% endif %}
       
     
     {% if user.is_authenticated %}
-    <form class="bid" action="{% url 'add_bid' listing.id %}" method="post">
-      {% csrf_token %}
-      <br>
-      <input type="number" step="0.1" min=0 name="bid" placeholder="Place your bid" required>
-      <button type="submit">Add to Watchlist</button>
-    </form>
-      {% else %}
-      <h2>Log in to bid on this item</h2>
+      <form class="bid" action="{% url 'add_bid' listing.id %}" method="post">
+        {% csrf_token %}
+        <br>
+        <input type="number" step="0.1" min=0 name="bid" placeholder="Place your bid" required>
+        <button type="submit">Add to Watchlist</button>
+      </form>
+        {% else %}
+        <h2>Log in to bid on this item</h2>
     {% endif %}
       
   </div>

@@ -4,14 +4,11 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-
 from .models import *
-
 
 def index(request):
     listings = Listing.objects.all().filter(active=True).order_by('-created_date')
     return render(request, "auctions/index.html", {'listings': listings})
-
 
 def login_view(request):
     if request.method == "POST":
@@ -32,11 +29,9 @@ def login_view(request):
     else:
         return render(request, "auctions/login.html")
 
-
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
-
 
 def register(request):
     if request.method == "POST":
@@ -72,7 +67,7 @@ def create_listing(request):
         description = request.POST["description"]
         starting_bid = request.POST["bid"]
         image_url = request.POST["image_url"]
-        category = Category.objects.get(title = request.POST["category"])
+        category = Category.objects.get(code = request.POST["category"])
         owner = User.objects.get(id = request.user.id)
 
         is_valid = title and description and starting_bid and category
@@ -104,7 +99,6 @@ def create_listing(request):
             return render(request, "auctions/create.html", context)
         else:
             return render(request, "auctions/login.html")
-
 
 def listing(request, id):
     # id that comes in is the id of the listing
@@ -258,8 +252,23 @@ def categories(request):
 
 def category(request, category):
     category = Category.objects.get(title = category)
-    listings = Listing.objects.all().filter(category=category.id)
+    listings = Listing.objects.all().filter(category=category.id).order_by('-created_date')
     return render(request, "auctions/category.html", {
         'category': category,
         'listings': listings
+    })
+
+def close_listing(request, id):
+    # id that comes in is the id of the listing
+    listing = Listing.objects.get(id=id)
+    comments = Comment.objects.all().filter(for_listing=listing).order_by('-time_added')
+    latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
+
+    listing.active = False
+    listing.save()
+
+    return render(request, "auctions/listing.html", {
+        'listing': listing,
+        'latest_bid': latest_bid[0] if latest_bid else None,
+        'comments': comments
     })

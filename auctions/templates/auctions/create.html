@@ -1,10 +1,8 @@
 {% extends "auctions/layout.html" %}
 
-
 {% block title %}
   Create new listing
 {% endblock title %}
-  
 
 {% block body %}
   <form action="{% url 'create' %}" method="post" style="display:flex;flex-direction:column;align-items:flex-start;">
@@ -23,10 +21,9 @@
     <input type="submit">
   </form>
 
-  
   {% if message %}
     {{ message }}
   {% endif %}
-    
+  
 {% endblock body %}
   
