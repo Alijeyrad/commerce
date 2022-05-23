@@ -25,7 +25,14 @@
   <div class="container bidding">
     
     {% if latest_bid %}
-      <strong>Current Bid: </strong>${{latest_bid.bid}} by {{latest_bid.bidder}}
+      <strong>Current Bid: </strong>${{latest_bid.bid}} 
+      
+      {% if latest_bid.bidder == user %}
+        <span>by you</span>
+      {% else %}
+        <span>by {{latest_bid.bidder}}</span>
+      {% endif %}
+        
       {% else %}
       <strong>Current Bid: </strong>No bids yet, be the first to bid.
     {% endif %}
@@ -33,7 +40,7 @@
     <form class="bid" action="{% url 'add_bid' listing.id %}" method="post">
       {% csrf_token %}
       <br>
-      <input type="number" step="0.1" min=0 name="bid" placeholder="Place your bid">
+      <input type="number" step="0.1" min=0 name="bid" placeholder="Place your bid" required>
       <button type="submit">Add to Watchlist</button>
     </form>
   </div>
@@ -47,7 +54,7 @@
     {% if user.is_authenticated %}
     <form action="{% url 'comment' listing.id %}" method="post" class="commentForm">
       {% csrf_token %}
-      <textarea name="comment" cols="30" rows="3" placeholder="Comment here"></textarea>
+      <textarea name="comment" cols="30" rows="3" placeholder="Comment here" required></textarea>
       <button type="submit">Comment</button>
     </form>
       {% else %}

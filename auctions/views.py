@@ -75,18 +75,28 @@ def create_listing(request):
         category = Category.objects.get(title = request.POST["category"])
         owner = User.objects.get(id = request.user.id)
 
-        new_listing = Listing.objects.create(
-            title = title,
-            description = description,
-            starting_bid = starting_bid,
-            image_url = image_url,
-            category = category,
-            owner = owner
-        )
-        new_listing.save()
+        is_valid = title and description and starting_bid and category
+
+        if image_url == '':
+            image_url = 'https://dummyimage.com/200x200/000/fff.jpg&text=NoImage'
+
+        if is_valid:
+            new_listing = Listing.objects.create(
+                title = title,
+                description = description,
+                starting_bid = starting_bid,
+                image_url = image_url,
+                category = category,
+                owner = owner
+            )
+            new_listing.save()
+            message = 'New Listing Added Successfully'
+        else:
+            message = "Required fields shouldn't be empty"
+
         
         return render(request, "auctions/create.html", {
-            'message': 'New Listing Added Successfully',
+            'message': message,
             'categories': categories
         })
     else:
@@ -101,7 +111,7 @@ def listing(request, id):
     listing = Listing.objects.get(id=id)
     comments = Comment.objects.all().filter(for_listing=listing).order_by('-time_added')
     latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
-    # users = User.objects.get(id = request.user.id)
+
     return render(request, "auctions/listing.html", {
         'listing': listing,
         'latest_bid': latest_bid[0] if latest_bid else None,
@@ -128,6 +138,7 @@ def add_bid(request, id):
                     for_listing = listing
                 )
                 new_bid.save()
+
                 # updating the M2M relationship between user and listing (through watchlist)
                 user.watchlist.add(listing)
                 user.save()
@@ -145,6 +156,7 @@ def add_bid(request, id):
                     for_listing = listing
                 )
             new_bid.save()
+
             # updating the M2M relationship between user and listing (through watchlist)
             user.watchlist.add(listing)
             user.save()
@@ -194,8 +206,23 @@ def add_comment(request, id):
 
 def watchlist(request):
     user = User.objects.get(id = request.user.id)
+    # latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
+    # user_bid = Bid.objects.all().filter(for_listing=listing.id, user=user).order_by('-time_added')
     watchlist = user.watchlist.all()
-    return render(request, "auctions/watchlist.html", {'watchlist': watchlist})
+    return render(request, "auctions/watchlist.html", {
+        'watchlist': watchlist,
+        # 'latest_bid': latest_bid,
+        # 'user_bid': user_bid
+    })
+
+def remove_watchlist(request, id):
+    if request.method == 'POST':
+        user = User.objects.get(id = request.user.id)
+        # remove listing from user's watchlist
+        user.watchlist.remove(id)
+        # remove user's bid from listing's bid
+        watchlist = user.watchlist.all()
+        return render(request, "auctions/watchlist.html", {'watchlist': watchlist})
 
 def categories(request):
     categories = Category.objects.all()

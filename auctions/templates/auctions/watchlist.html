@@ -20,8 +20,13 @@
               </a>
           </h5>
           <p>{{listing.description|truncatechars:15 }}</p>
-          <span>${{listing.starting_bid}}</span>
+          <span><strong>Starting price:</strong> ${{listing.starting_bid}}</span>
       </div>
+      <form class="remove_watchlist" method="post" action="{% url 'remove_watchlist' listing.id %}">
+        {% csrf_token %}
+        <button type="submit">Remove from Watchlist</button>
+      </form>
+      <br>
     </div>
   {% endfor %}
     
