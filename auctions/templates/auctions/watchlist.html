@@ -7,7 +7,7 @@
   
 
 {% block body %}
-  
+
   {% for listing in watchlist %}
     <div class="container">
       <div class="image">
@@ -20,7 +20,25 @@
               </a>
           </h5>
           <p>{{listing.description|truncatechars:15 }}</p>
-          <span><strong>Starting price:</strong> ${{listing.starting_bid}}</span>
+          <p><strong>Starting price:</strong> ${{listing.starting_bid}}</p>
+          <p>
+            {% for bid in bids %}
+  
+              {% if bid.for_listing == listing %}
+                <strong>Your bid: </strong>{{bid.bid}}
+              {% endif %}
+              
+            {% endfor %}
+          </p>
+          <p>
+            {% for current_bid in current_bids %}
+              
+              {% if current_bid.for_listing == listing %}
+                <strong>Current bid: </strong>{{current_bid.bid}}
+              {% endif %}
+                
+            {% endfor %}
+          </p>
       </div>
       <form class="remove_watchlist" method="post" action="{% url 'remove_watchlist' listing.id %}">
         {% csrf_token %}

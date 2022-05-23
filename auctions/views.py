@@ -206,23 +206,51 @@ def add_comment(request, id):
 
 def watchlist(request):
     user = User.objects.get(id = request.user.id)
-    # latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
-    # user_bid = Bid.objects.all().filter(for_listing=listing.id, user=user).order_by('-time_added')
     watchlist = user.watchlist.all()
+
+    bids = []
+    current_bids = []
+    for listing_obj in watchlist:
+        bid = Bid.objects.filter(for_listing=listing_obj, bidder=user).order_by('-time_added').first()
+        bids.append(bid)
+
+    for listing_obj in watchlist:
+        current_bid = Bid.objects.filter(for_listing=listing_obj).order_by('-time_added').first()
+        current_bids.append(current_bid)
+
     return render(request, "auctions/watchlist.html", {
         'watchlist': watchlist,
-        # 'latest_bid': latest_bid,
-        # 'user_bid': user_bid
+        'bids': bids,
+        'current_bids': current_bids
     })
 
 def remove_watchlist(request, id):
     if request.method == 'POST':
         user = User.objects.get(id = request.user.id)
+        listing = Listing.objects.get(id=id)
         # remove listing from user's watchlist
         user.watchlist.remove(id)
+        # find the corresponding bid
+        bid = Bid.objects.filter(bidder=user, for_listing=listing)
+        bid.delete()
         # remove user's bid from listing's bid
         watchlist = user.watchlist.all()
-        return render(request, "auctions/watchlist.html", {'watchlist': watchlist})
+
+        bids = []
+        current_bids = []
+        for listing_obj in watchlist:
+            bid = Bid.objects.filter(for_listing=listing_obj, bidder=user).order_by('-time_added').first()
+            bids.append(bid)
+
+        for listing_obj in watchlist:
+            current_bid = Bid.objects.filter(for_listing=listing_obj).order_by('-time_added').first()
+            current_bids.append(current_bid)
+
+        return render(request, "auctions/watchlist.html", {
+            'watchlist': watchlist,
+            'bids': bids,
+            'current_bids': current_bids
+        })
 
 def categories(request):
     categories = Category.objects.all()
