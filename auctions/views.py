@@ -2,6 +2,7 @@ from nis import cat
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.urls import reverse
 from .models import *
@@ -89,7 +90,6 @@ def create_listing(request):
         else:
             message = "Required fields shouldn't be empty"
 
-        
         return render(request, "auctions/create.html", {
             'message': message,
             'categories': categories
@@ -175,7 +175,7 @@ def add_comment(request, id):
         latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
         user = User.objects.get(id=request.user.id)
         text = request.POST["comment"]
-        if text == '':
+        if text.strip() == '':
             comments = Comment.objects.all().filter(for_listing=listing).order_by('-time_added')
             return render(request, "auctions/listing.html", {
                 'listing': listing,
@@ -198,6 +198,7 @@ def add_comment(request, id):
             'comments': comments
         })
 
+@login_required
 def watchlist(request):
     user = User.objects.get(id = request.user.id)
     watchlist = user.watchlist.all()
@@ -218,33 +219,36 @@ def watchlist(request):
         'current_bids': current_bids
     })
 
+@login_required
 def remove_watchlist(request, id):
-    if request.method == 'POST':
-        user = User.objects.get(id = request.user.id)
-        listing = Listing.objects.get(id=id)
-        # remove listing from user's watchlist
-        user.watchlist.remove(id)
-        # find the corresponding bid
-        bid = Bid.objects.filter(bidder=user, for_listing=listing)
-        bid.delete()
-        # remove user's bid from listing's bid
-        watchlist = user.watchlist.all()
+    user = User.objects.get(id = request.user.id)
+    listing = Listing.objects.get(id=id)
+    # remove listing from user's watchlist
+    user.watchlist.remove(id)
+    # find the corresponding bid
+    bid = Bid.objects.filter(bidder=user, for_listing=listing)
+    bid.delete()
+    # remove user's bid from listing's bid
+    watchlist = user.watchlist.all()
 
-        bids = []
-        current_bids = []
-        for listing_obj in watchlist:
-            bid = Bid.objects.filter(for_listing=listing_obj, bidder=user).order_by('-time_added').first()
-            bids.append(bid)
+    bids = []
+    current_bids = []
+    for listing_obj in watchlist:
+        bid = Bid.objects.filter(for_listing=listing_obj, bidder=user).order_by('-time_added').first()
+        bids.append(bid)
 
-        for listing_obj in watchlist:
-            current_bid = Bid.objects.filter(for_listing=listing_obj).order_by('-time_added').first()
-            current_bids.append(current_bid)
+    for listing_obj in watchlist:
+        current_bid = Bid.objects.filter(for_listing=listing_obj).order_by('-time_added').first()
+        current_bids.append(current_bid)
 
-        return render(request, "auctions/watchlist.html", {
-            'watchlist': watchlist,
-            'bids': bids,
-            'current_bids': current_bids
-        })
+    comments = Comment.objects.all().filter(for_listing=listing).order_by('-time_added')
+    latest_bid = Bid.objects.all().filter(for_listing=listing.id).order_by('-time_added')
+
+    return render(request, "auctions/listing.html", {
+        'listing': listing,
+        'latest_bid': latest_bid[0] if latest_bid else None,
+        'comments': comments
+    })
 
 def categories(request):
     categories = Category.objects.all()
@@ -258,6 +262,7 @@ def category(request, category):
         'listings': listings
     })
 
+@login_required
 def close_listing(request, id):
     # id that comes in is the id of the listing
     listing = Listing.objects.get(id=id)

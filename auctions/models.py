@@ -24,7 +24,6 @@ class Listing(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="owner")
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    bids = models.ForeignKey('Bid', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f"{self.title} by {self.owner}"
