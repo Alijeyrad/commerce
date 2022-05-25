@@ -8,19 +8,20 @@
 
 {% block body %}
   
-  
-  {% for category in categories %}
-    <a href="{% url 'category' category.title %}">
-      <div class="container">
-        <div class="image">
-          <img src="static/auctions/categoryimage/{{category.title}}.jpg" alt="{{category.title}}" width="200" height="200">
+  <div class="d-flex flex-row flex-wrap">
+    {% for category in categories %}
+      <a class="text-decoration-none" href="{% url 'category' category.title %}">
+        <div class="container">
+          <div class="image">
+            <img src="static/auctions/categoryimage/{{category.title}}.jpg" alt="{{category.title}}" width="200" height="200">
+          </div>
+          <div class="title">
+            <p>{{ category.title }}</p>
+          </div>
         </div>
-        <div class="title">
-          <p>{{ category.title }}</p>
-        </div>
-      </div>
-    </a>
-  {% endfor %}
+      </a>
+    {% endfor %}
+  </div>
     
 
 {% endblock body %}

@@ -8,24 +8,27 @@
 
 {% block body %}
 
+<div class="container">
+  <h2 class="mb-4">Watchlist</h2>
+
   {% for listing in watchlist %}
-    <div class="container">
-      <div class="image">
-          <img src="{{listing.image_url}}" alt="{{listing.title}}">
+  <div class="listing border rounded shadow-sm p-3 mb-2 row">
+      <div class="col-lg-3 image">
+        <img src="{{listing.image_url}}" alt="{{listing.title}}">
+        <a class="btn btn-outline-danger text-decoration-none mt-2" href="{% url 'remove_watchlist' listing.id %}">Remove from Watchlist</a>
       </div>
-      <div class="info">
-          <h5>
-              <a href="{% url 'listing' listing.id %}">
-                  {{listing.title}}
-              </a>
-          </h5>
-          <p>{{listing.description|truncatechars:15 }}</p>
+      <div class="col-lg-9 info">
+        <h4>
+          <a class="text-decoration-none" href="{% url 'listing' listing.id %}">
+              {{listing.title}}
+          </a>
+        </h4>
           <p><strong>Starting price:</strong> ${{listing.starting_bid}}</p>
           <p>
             {% for bid in bids %}
-  
+
               {% if bid.for_listing == listing %}
-                <strong>Your bid: </strong>{{bid.bid}}
+                <strong>Your bid: </strong>${{bid.bid}}
               {% endif %}
               
             {% endfor %}
@@ -34,19 +37,16 @@
             {% for current_bid in current_bids %}
               
               {% if current_bid.for_listing == listing %}
-                <strong>Current bid: </strong>{{current_bid.bid}}
+                <strong>Current bid: </strong>${{current_bid.bid}} by {{current_bid.bidder}}
               {% endif %}
                 
             {% endfor %}
           </p>
       </div>
-      <form class="remove_watchlist" method="post" action="{% url 'remove_watchlist' listing.id %}">
-        {% csrf_token %}
-        <button type="submit">Remove from Watchlist</button>
-      </form>
-      <br>
-    </div>
+  </div>
   {% endfor %}
+
+</div>
     
 {% endblock body %}
   

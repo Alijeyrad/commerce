@@ -1,24 +1,28 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
-    
-    
+
+<div class="container">
+    <h2 class="mb-4">Active Listings</h2>
     {% for listing in listings %}
-        <div class="container">
-            <div class="image">
-                <img src="{{listing.image_url}}" alt="{{listing.title}}">
-            </div>
-            <div class="info">
-                <h5>
-                    <a href="{% url 'listing' listing.id %}">
-                        {{listing.title}}
-                    </a>
-                </h5>
-                <p>{{listing.description|truncatechars:15 }}</p>
-                <span>${{listing.starting_bid}}</span>
-            </div>
+    <div class="listing border rounded shadow-sm p-3 mb-2 row">
+        <div class="col-lg-3 image">
+            <img src="{{listing.image_url}}" alt="{{listing.title}}">
         </div>
+        <div class="col-lg-9 info">
+            <h3>
+                <a class="text-decoration-none" href="{% url 'listing' listing.id %}">
+                    {{listing.title}}
+                </a>
+            </h3>
+            
+            <p><strong>Description: </strong>{{listing.description|truncatechars:15 }}</p>
+            <p><strong>Category: </strong>{{listing.category }}</p>
+            <p><strong>Starting bid: </strong>${{listing.starting_bid}}</p>
+            <p><strong>Created: </strong>{{listing.created_date}}</p>
+        </div>
+    </div>
     {% endfor %}
+</div>
         
 {% endblock %}
