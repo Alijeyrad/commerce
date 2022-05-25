@@ -22,6 +22,8 @@
             <p><strong>Created: </strong>{{listing.created_date}}</p>
         </div>
     </div>
+    {% empty %}
+        <h4>No listings</h4>
     {% endfor %}
 </div>
         

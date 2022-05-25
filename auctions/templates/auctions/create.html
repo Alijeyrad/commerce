@@ -27,15 +27,14 @@
         </select>
         <input class="btn btn-primary" type="submit">
       </form>
+      {% if message %}
+      <p class="text-success ps-3 pt-3">
+        {{ message }}
+      </p>
+      {% endif %}
 
     </div>
   </div>
-
-
-
-  {% if message %}
-    {{ message }}
-  {% endif %}
   
 {% endblock body %}
   
